@@ -113,101 +113,100 @@ var game = {
     get_best_answer:function(){
         var here = this
         var ans = []
-        var memory_ix = {}
         var memory = {}
-        function foo(fe, b, e){
+        function get(here, fe, b, e, i){
+            if(here.op[(fe+b+i)%here.ring.length] == '+'){
+                return [foo(fe, b, b+i)+foo(fe, b+i, e), foo, foo, i]
+            }
+            else{
+                var f1 = foo
+                var f2 = foo
+                var v1 = foo(fe, b, b+i)*foo(fe, b+i, e)
+                var v2 = foo1(fe, b, b+i)*foo1(fe, b+i, e)
+                if(v1<v2){
+                    v1 = v2
+                    f1 = foo1
+                    f2 = foo1
+                }
+                v2 = foo(fe, b, b+i)*foo1(fe, b+i, e)
+                if(v1<v2){
+                    v1 = v2
+                    f1 = foo
+                    f2 = foo1
+                }
+                v2 = foo1(fe, b, b+i)*foo(fe, b+i, e)
+                if(v1<v2){
+                    v1 = v2
+                    f1 = foo1
+                    f2 = foo
+                }
+                return [v1, f1, f2, i]
+            }
+        }
+        function foo(fe, b, e, arr){
             if(e-b==1){
                 return here.ring[(fe+b+1)%here.ring.length] 
             }
             if([fe, b, e] in memory){
-                return memory[[fe, b, e]].val
+                return memory[[fe, b, e]][0]
             }
-            var max, ix;
-            ix = 1
-            if(here.op[(fe+b+1)%here.ring.length] == '+'){
-                max = here.use_op(here.op[(fe+b+1)%here.ring.length], foo(fe, b, b+1), foo(fe, b+1, e))
-            }
-            else{
-                v1 = here.use_op(here.op[(fe+b+1)%here.ring.length], foo(fe, b, b+1), foo(fe, b+1, e))
-                v2 = here.use_op(here.op[(fe+b+1)%here.ring.length], foo1(fe, b, b+1), foo1(fe, b+1, e))
-                if(v1<v2){
-                    v1 = v2
-                }
-                max = v1
-            }
+            var max = get(here, fe, b, e, 1)
             for(var i = 2; b+i<e; ++i){
-                var val;
-                if(here.op[(fe+b+i)%here.ring.length] == '+'){
-                    val = here.use_op(here.op[(fe+b+i)%here.ring.length], foo(fe, b, b+i), foo(fe, b+i, e))
-                }
-                else{
-                    v1 = here.use_op(here.op[(fe+b+i)%here.ring.length], foo(fe, b, b+i), foo(fe, b+i, e))
-                    v2 = here.use_op(here.op[(fe+b+i)%here.ring.length], foo1(fe, b, b+i), foo1(fe, b+i, e))
-                    if(v1<v2){
-                        v1 = v2
-                    }
-                    val = v1
-                }
+                var val = get(here, fe, b, e, i)
 
-                if(max<val){
-                    ix = i
+                if(max[0]<val[0]){
                     max = val
                 }
             }
-            memory[[fe, b, e]] = {
-                'val':max,
-            }
-            memory_ix[[fe, b, e]] = {
-                'ix':ix,
-            }
-            return max
+            memory[[fe, b, e]] = max
+            return max[0]
         }
         var memory1 = {}
+        function get1(here, fe, b, e, i){
+            if(here.op[(fe+b+i)%here.ring.length] == '+'){
+                return [foo1(fe, b, b+i)+foo1(fe, b+i, e), foo1, foo1, i]
+            }
+            else{
+                var f1 = foo
+                var f2 = foo
+                var v1 = foo(fe, b, b+i)*foo(fe, b+i, e)
+                var v2 = foo1(fe, b, b+i)*foo1(fe, b+i, e)
+                if(v1>v2){
+                    v1 = v2
+                    f1 = foo1
+                    f2 = foo1
+                }
+                v2 = foo(fe, b, b+i)*foo1(fe, b+i, e)
+                if(v1>v2){
+                    v1 = v2
+                    f1 = foo
+                    f2 = foo1
+                }
+                v2 = foo1(fe, b, b+i)*foo(fe, b+i, e)
+                if(v1>v2){
+                    v1 = v2
+                    f1 = foo1
+                    f2 = foo
+                }
+                return [v1, f1, f2, i]
+            }
+        }
         function foo1(fe, b, e){
             if(e-b==1){
                 return here.ring[(fe+b+1)%here.ring.length] 
             }
             if([fe, b, e] in memory1){
-                return memory1[[fe, b, e]].val
+                return memory1[[fe, b, e]][0]
             }
-            var max, ix;
-            ix = 1
-            if(here.op[(fe+b+1)%here.ring.length] == '+'){
-                max = here.use_op(here.op[(fe+b+1)%here.ring.length], foo1(fe, b, b+1), foo1(fe, b+1, e))
-            }
-            else{
-                v1 = here.use_op(here.op[(fe+b+1)%here.ring.length], foo1(fe, b, b+1), foo1(fe, b+1, e))
-                v2 = here.use_op(here.op[(fe+b+1)%here.ring.length], foo(fe, b, b+1), foo(fe, b+1, e))
-                if(v1>v2){
-                    v1 = v2
-                }
-                max = v1
-            }
+            var min = get1(here, fe, b, e, 1)
             for(var i = 2; b+i<e; ++i){
-                var val;
-                if(here.op[(fe+b+i)%here.ring.length] == '+'){
-                    val = here.use_op(here.op[(fe+b+i)%here.ring.length], foo1(fe, b, b+i), foo1(fe, b+i, e))
-                }
-                else{
-                    v1 = here.use_op(here.op[(fe+b+1)%here.ring.length], foo1(fe, b, b+1), foo1(fe, b+1, e))
-                    v2 = here.use_op(here.op[(fe+b+1)%here.ring.length], foo(fe, b, b+1), foo(fe, b+1, e))
-                    if(v1>v2){
-                        v1 = v2
-                    }
-                    val = v1
-                }
-                if(max>val){
-                    ix = i
-                    max = val
+                var val = get1(here, fe, b, e, i)
+                if(min[0]>val[0]){
+                    min = val
                 }
             }
-            memory1[[fe, b, e]] = {
-                'val':max,
-            }
-            memory_ix[[fe, b, e]] = {
-                'ix':ix,
-            }
-            return max
+            memory1[[fe, b, e]] = min
+            return min[0]
         }
         var max = foo(0, 0, here.ring.length)
         var fe = 0
@@ -218,17 +217,22 @@ var game = {
                 fe = i
             }
         }
-        function foo2(fe, b, e){
+        function foo2(fe, b, e, fun){
             if(e-b==1){
                 return
             }
-            var ix = memory_ix[[fe,b,e]].ix
-            foo2(fe, b, b+ix)
-            foo2(fe, b+ix, e)
+            var ix;
+            var m = memory1[[fe, b, e]]
+            if(fun == foo){
+                m = memory[[fe, b, e]]
+            }
+            ix = m[3]
+            foo2(fe, b, b+ix, m[1])
+            foo2(fe, b+ix, e, m[2])
             ans.push((fe+b+ix)%here.ring.length)
         }
         ans.push(fe)
-        foo2(fe, 0 , here.ring.length, memory)
+        foo2(fe, 0 , here.ring.length, foo)
         return ans
     },
     size:function(){
